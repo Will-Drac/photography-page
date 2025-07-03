@@ -157,7 +157,7 @@ async function switchImages(url) {
         .then(res => res.blob())
         .then(blob => {
             const img = new Image()
-            const url = URL.createObjectURL(blob)
+            const blobURL = URL.createObjectURL(blob)
             img.onload = function () {
                 EXIF.getData(img, function () {
                     const data = EXIF.getAllTags(this)
@@ -167,16 +167,35 @@ async function switchImages(url) {
                     const date = dateAndTime[0].split(":")
                     const time = dateAndTime[1].split(":")
 
+                    for (let i = 0; i < time.length; i++){time[i] = parseInt(time[i])}
+                    for (let i = 0; i < date.length; i++){date[i] = parseInt(date[i])}
+
+                    // i had the time set wrong in the beginning, this fixes it to about what it should be
+                    if (parseInt(url.slice(13, 17)) <= 205) {
+                        time[1] += 30
+                        if (time[1] >= 60) {
+                            time[1] -= 60
+                            time[0] += 1
+                        }
+                        time[0] -= 8
+                        if (time[0] < 0) {
+                            time[0] += 24
+                            date[2] -= 1
+                        }
+                    }
+
+                    if (time[1] < 10) {time[1] = "0"+time[1]}
+
                     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
                     document.getElementById("dateAndTime").innerText = `${months[parseInt(date[1]) - 1]} ${parseInt(date[2])}, ${parseInt(date[0])}; ${time[0] % 12 == 0 ? 12 : time[0] % 12}:${time[1]} ${time[0] < 12 ? "AM" : "PM"}`
 
-                    document.getElementById("exposure").innerText = `ISO ${data.ISOSpeedRatings}; f/${data.FNumber}; 1/${1/data.ExposureTime} sec.`
+                    document.getElementById("exposure").innerText = `ISO ${data.ISOSpeedRatings}; f/${data.FNumber}; 1/${1 / data.ExposureTime} sec.`
 
                     document.getElementById("zoom").innerText = `${data.FocalLengthIn35mmFilm} mm`
                 })
             }
-            img.src = url
+            img.src = blobURL
         })
 
 }
@@ -362,7 +381,7 @@ async function main() {
     }
     updateBackground()
 
-    let lastCanvasWidth = 0; let lastCanvasHeight = 0; let lastUrl = ""
+    let lastCanvasWidth = 0; let lastCanvasHeight = 0
     async function render(time) {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight
         if (lastCanvasWidth !== canvas.width || lastCanvasHeight !== canvas.height) {
@@ -411,7 +430,7 @@ async function main() {
     requestAnimationFrame(render)
 }
 
-let mousePos = []
+let mousePos = [window.innerWidth / 2, window.innerHeight / 2]
 document.getElementById("display").addEventListener("mousemove", function (e) {
     const canvas = document.getElementById("display")
     const rect = canvas.getBoundingClientRect()
@@ -422,20 +441,20 @@ document.getElementById("display").addEventListener("mousemove", function (e) {
 })
 
 let fingerDown = false
-document.getElementById("display").addEventListener("touchstart", function() {
+document.getElementById("display").addEventListener("touchstart", function () {
     fingerDown = true
 })
 
-document.getElementById("display").addEventListener("touchend", function() {
+document.getElementById("display").addEventListener("touchend", function () {
     fingerDown = false
     const canvas = document.getElementById("display")
-    mousePos = [canvas.width/2, canvas.height/2]
+    mousePos = [canvas.width / 2, canvas.height / 2]
 })
 
 document.getElementById("display").addEventListener("touchmove", function (e) {
     const canvas = document.getElementById("display")
     if (!fingerDown) {
-        mousePos = [canvas.width/2, canvas.height/2]
+        mousePos = [canvas.width / 2, canvas.height / 2]
     }
     else {
         const rect = canvas.getBoundingClientRect()
