@@ -421,14 +421,29 @@ document.getElementById("display").addEventListener("mousemove", function (e) {
     ]
 })
 
-document.getElementById("display").addEventListener("touchMove", function (e) {
-    console.log("hi")
+let fingerDown = false
+document.getElementById("display").addEventListener("touchstart", function() {
+    fingerDown = true
+})
+
+document.getElementById("display").addEventListener("touchend", function() {
+    fingerDown = false
     const canvas = document.getElementById("display")
-    const rect = canvas.getBoundingClientRect()
-    mousePos = [
-        (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
-        (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
-    ]
+    mousePos = [canvas.width/2, canvas.height/2]
+})
+
+document.getElementById("display").addEventListener("touchmove", function (e) {
+    const canvas = document.getElementById("display")
+    if (!fingerDown) {
+        mousePos = [canvas.width/2, canvas.height/2]
+    }
+    else {
+        const rect = canvas.getBoundingClientRect()
+        mousePos = [
+            (e.touches[0].clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+            (e.touches[0].clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+        ]
+    }
 })
 
 
