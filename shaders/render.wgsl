@@ -46,7 +46,7 @@ fn rotateY(v: vec3f, theta: f32) -> vec3f {
     );
 }
 
-const lightDir = normalize(vec3f(-3, -2, -1));
+const lightDir = normalize(vec3f(3, -2, -1));
 
 @fragment fn fs(fsInput: vertexShaderOutput) -> @location(0)vec4f {
     let pictureDimensions = vec2f(textureDimensions(colorTexture));

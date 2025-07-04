@@ -1,0 +1,22 @@
+.background {
+    position: fixed;
+    background-color: #00000094;
+    color: white;
+    border-radius: 5px;
+    padding: 10px;
+    font-family: 'Rubik', sans-serif;
+    backdrop-filter: blur(10px);
+}
+
+button {
+    background-color: #000000c1;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    font-size: large;
+}
+
+body {
+    font-size: large;
+}

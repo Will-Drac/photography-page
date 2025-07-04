@@ -167,8 +167,8 @@ async function switchImages(url) {
                     const date = dateAndTime[0].split(":")
                     const time = dateAndTime[1].split(":")
 
-                    for (let i = 0; i < time.length; i++){time[i] = parseInt(time[i])}
-                    for (let i = 0; i < date.length; i++){date[i] = parseInt(date[i])}
+                    for (let i = 0; i < time.length; i++) { time[i] = parseInt(time[i]) }
+                    for (let i = 0; i < date.length; i++) { date[i] = parseInt(date[i]) }
 
                     // i had the time set wrong in the beginning, this fixes it to about what it should be
                     if (parseInt(url.slice(13, 17)) <= 205) {
@@ -184,7 +184,7 @@ async function switchImages(url) {
                         }
                     }
 
-                    if (time[1] < 10) {time[1] = "0"+time[1]}
+                    if (time[1] < 10) { time[1] = "0" + time[1] }
 
                     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
@@ -234,7 +234,8 @@ async function main() {
     canvasSizeValues.set([canvas.width, canvas.height], 0)
     device.queue.writeBuffer(canvasSizeBuffer, 0, canvasSizeValues)
 
-    await switchImages("pictures/P1050149.JPG")
+    await switchImages("pictures/P1050128.JPG")
+    playAudioFromIndex(imageIndexShown)
 
 
     const sampler = device.createSampler({
@@ -431,7 +432,7 @@ async function main() {
 }
 
 let mousePos = [window.innerWidth / 2, window.innerHeight / 2]
-document.getElementById("display").addEventListener("mousemove", function (e) {
+document.body.addEventListener("mousemove", function (e) {
     const canvas = document.getElementById("display")
     const rect = canvas.getBoundingClientRect()
     mousePos = [
@@ -441,17 +442,17 @@ document.getElementById("display").addEventListener("mousemove", function (e) {
 })
 
 let fingerDown = false
-document.getElementById("display").addEventListener("touchstart", function () {
+document.body.addEventListener("touchstart", function () {
     fingerDown = true
 })
 
-document.getElementById("display").addEventListener("touchend", function () {
+document.body.addEventListener("touchend", function () {
     fingerDown = false
     const canvas = document.getElementById("display")
     mousePos = [canvas.width / 2, canvas.height / 2]
 })
 
-document.getElementById("display").addEventListener("touchmove", function (e) {
+document.body.addEventListener("touchmove", function (e) {
     const canvas = document.getElementById("display")
     if (!fingerDown) {
         mousePos = [canvas.width / 2, canvas.height / 2]
@@ -467,3 +468,38 @@ document.getElementById("display").addEventListener("touchmove", function (e) {
 
 
 main()
+
+let imageIndexShown = 0
+function nextImage() {
+    imageIndexShown = (imageIndexShown + 1) % pictures.length
+    switchImages(`pictures/P${pictures[imageIndexShown][0]}.JPG`)
+
+    playAudioFromIndex(imageIndexShown)
+}
+
+function previousImage() {
+    imageIndexShown = (imageIndexShown - 1)
+    if (imageIndexShown < 0) { imageIndexShown += pictures.length }
+    imageIndexShown %= pictures.length
+    switchImages(`pictures/P${pictures[imageIndexShown][0]}.JPG`)
+
+    playAudioFromIndex(imageIndexShown)
+}
+
+function randomImage() {
+    imageIndexShown = Math.floor(Math.random()*pictures.length)
+    switchImages(`pictures/P${pictures[imageIndexShown][0]}.JPG`)
+
+    playAudioFromIndex(imageIndexShown)
+}
+
+const audio = new Audio()
+audio.loop = true
+audio.play()
+
+function playAudioFromIndex(index) {
+    if(audio.src !==`${window.location.href}sounds/${pictures[index][1]}.mp3`) {
+        audio.src = `sounds/${pictures[index][1]}.mp3`
+        audio.play()
+    }
+}
