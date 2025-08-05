@@ -11,8 +11,6 @@ async function loadImageBitmap(url) {
     return await createImageBitmap(blob, { colorSpaceConversion: "none" })
 }
 
-const normalBlur = 10
-
 let urlUsed = ""; let lastUrl = "wdajodi"; let shouldUpdateBackground = false
 async function switchImages(url) {
     urlUsed = url
@@ -33,6 +31,7 @@ async function switchImages(url) {
 
     textureToRender = texture
 
+    const normalBlurAmount = Math.max(Math.round(Math.max(source.width, source.height)/500), 1)
 
     // the picture needs to be blurred before it's used for normals
     const blurredTexture = device.createTexture({
@@ -54,7 +53,7 @@ async function switchImages(url) {
             .replace("_ENDIFH", "")
             .replace("_STARTIFV", "/*")
             .replace("_ENDIFV", "*/")
-            .replaceAll("R", normalBlur)
+            .replaceAll("R", normalBlurAmount)
     })
 
     const blurPipelineH = device.createComputePipeline({
@@ -85,7 +84,7 @@ async function switchImages(url) {
             .replace("_ENDIFH", "*/")
             .replace("_STARTIFV", "")
             .replace("_ENDIFV", "")
-            .replaceAll("R", normalBlur)
+            .replaceAll("R", normalBlurAmount)
     })
 
     const blurPipelineV = device.createComputePipeline({
@@ -161,7 +160,6 @@ async function switchImages(url) {
             img.onload = function () {
                 EXIF.getData(img, function () {
                     const data = EXIF.getAllTags(this)
-                    console.log(data)
 
                     const dateAndTime = data.DateTimeOriginal.split(" ")
                     const date = dateAndTime[0].split(":")
@@ -190,7 +188,7 @@ async function switchImages(url) {
 
                     document.getElementById("dateAndTime").innerText = `${months[parseInt(date[1]) - 1]} ${parseInt(date[2])}, ${parseInt(date[0])}; ${time[0] % 12 == 0 ? 12 : time[0] % 12}:${time[1]} ${time[0] < 12 ? "AM" : "PM"}`
 
-                    document.getElementById("exposure").innerText = `ISO ${data.ISOSpeedRatings}; f/${data.FNumber}; 1/${1 / data.ExposureTime} sec.`
+                    document.getElementById("exposure").innerText = `ISO ${data.ISOSpeedRatings.toFixed(0)}; f/${data.FNumber.toFixed(2)}; 1/${(1 / data.ExposureTime).toFixed(0)} sec.`
 
                     document.getElementById("zoom").innerText = `${data.FocalLengthIn35mmFilm} mm`
                 })
@@ -234,7 +232,7 @@ async function main() {
     canvasSizeValues.set([canvas.width, canvas.height], 0)
     device.queue.writeBuffer(canvasSizeBuffer, 0, canvasSizeValues)
 
-    await switchImages("pictures/P1050128.JPG")
+    await switchImages("pictures camera/P1050128.JPG")
     playAudioFromIndex(imageIndexShown)
 
 
@@ -469,10 +467,22 @@ document.body.addEventListener("touchmove", function (e) {
 
 main()
 
+function getImageURL(imageIndex) {
+    const pictureType = pictures[imageIndex][2]
+
+    if (pictureType == "camera") {
+        return `pictures camera/P${pictures[imageIndex][0]}.JPG`
+    }
+    else if (pictureType == "phone") {
+        return `pictures phone/IMG_${pictures[imageIndexShown][0]}.JPEG`
+    }
+}
+
 let imageIndexShown = 0
 function nextImage() {
     imageIndexShown = (imageIndexShown + 1) % pictures.length
-    switchImages(`pictures/P${pictures[imageIndexShown][0]}.JPG`)
+
+    switchImages(getImageURL(imageIndexShown))
 
     playAudioFromIndex(imageIndexShown)
 }
@@ -481,14 +491,16 @@ function previousImage() {
     imageIndexShown = (imageIndexShown - 1)
     if (imageIndexShown < 0) { imageIndexShown += pictures.length }
     imageIndexShown %= pictures.length
-    switchImages(`pictures/P${pictures[imageIndexShown][0]}.JPG`)
+
+    switchImages(getImageURL(imageIndexShown))
 
     playAudioFromIndex(imageIndexShown)
 }
 
 function randomImage() {
-    imageIndexShown = Math.floor(Math.random()*pictures.length)
-    switchImages(`pictures/P${pictures[imageIndexShown][0]}.JPG`)
+    imageIndexShown = Math.floor(Math.random() * pictures.length)
+
+    switchImages(getImageURL(imageIndexShown))
 
     playAudioFromIndex(imageIndexShown)
 }
@@ -498,7 +510,7 @@ audio.loop = true
 audio.play()
 
 function playAudioFromIndex(index) {
-    if(audio.src !==`${window.location.href}sounds/${pictures[index][1]}.mp3`) {
+    if (audio.src !== `${window.location.href}sounds/${pictures[index][1]}.mp3`) {
         audio.src = `sounds/${pictures[index][1]}.mp3`
         audio.play()
     }
