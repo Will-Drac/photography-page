@@ -46,7 +46,7 @@ fn rotateY(v: vec3f, theta: f32) -> vec3f {
     );
 }
 
-const lightDir = normalize(vec3f(3, -2, -1));
+const lightDir = normalize(vec3f(0.25, 0, -1));
 
 @fragment fn fs(fsInput: vertexShaderOutput) -> @location(0)vec4f {
     let pictureDimensions = vec2f(textureDimensions(colorTexture));
@@ -95,7 +95,7 @@ const lightDir = normalize(vec3f(3, -2, -1));
     let surfaceNorm = rotateY(rotateX(n.xyz, -mousePos.y+0.5), -mousePos.x+0.5);
 
     let reflectionVector = reflect(viewRay, surfaceNorm);
-    let shine = max(0, pow(dot(reflectionVector, lightDir), 5));
+    let shine = 0.5 * max(0, pow(dot(reflectionVector, lightDir), 50));
     let ambient = 1.;
     let lightingAmount = shine + ambient;
 
