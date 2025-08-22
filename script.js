@@ -31,7 +31,7 @@ async function switchImages(url) {
 
     textureToRender = texture
 
-    const normalBlurAmount = Math.max(Math.round(Math.max(source.width, source.height)/500), 1)
+    const normalBlurAmount = Math.max(Math.round(Math.max(source.width, source.height) / 500), 1)
 
     // the picture needs to be blurred before it's used for normals
     const blurredTexture = device.createTexture({
@@ -160,6 +160,14 @@ async function switchImages(url) {
             img.onload = function () {
                 EXIF.getData(img, function () {
                     const data = EXIF.getAllTags(this)
+
+                    if (data.DateTimeOriginal == undefined) {
+                        document.getElementById("dateAndTime").innerText = `No Data Available`
+                        document.getElementById("exposure").innerText = ``
+                        document.getElementById("zoom").innerText = ``
+
+                        return
+                    }
 
                     const dateAndTime = data.DateTimeOriginal.split(" ")
                     const date = dateAndTime[0].split(":")
